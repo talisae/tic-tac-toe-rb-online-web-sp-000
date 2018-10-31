@@ -7,61 +7,27 @@ WIN_COMBINATIONS = [
   [2, 5, 8],
   [0, 4, 8],
   [6, 4, 2]
-]
+].freeze
+
+def play(board)
+  turn(board) until over?(board)
+  if won?(board)
+    puts "Congratulations #{winner(board)}!"
+  elsif draw?(board)
+    puts "Cat's Game!"
+  end
+end
 
 def display_board(board)
   puts " #{board[0]} | #{board[1]} | #{board[2]} "
-  puts "-----------"
+  puts '-----------'
   puts " #{board[3]} | #{board[4]} | #{board[5]} "
-  puts "-----------"
+  puts '-----------'
   puts " #{board[6]} | #{board[7]} | #{board[8]} "
 end
 
-def input_to_index(user_input)
-  user_input.to_i - 1
-end
-
-def move(board, index, value)
-  board[index] = value
-end
-
-def position_taken?(board, index)
-  board[index] == 'X' || board[index] == 'O'
-end
-
-def valid_move?(board, position)
-	position.to_i - 1
-	if !position_taken?(board, position) && position.between?(0,8)
-		true
- 	else
-		false
- 	end
- end
-
-def turn(board)
-   puts "Please enter 1-9:"
-   num = gets.chomp
-   position = input_to_index(num)
-   if valid_move?(board, position)
-      move(board, position, "X")
-      display_board(board)
-   else
-     turn(board)
-   end
- end
-
-def turn_count(board)
-   turns = 0
-   board.each do |input|
-     if input == "X" || input == "O"
-     turns += 1
-     end
-   end
-   turns
-end
-
-def current_player(board)
-   turn_count(board) % 2 == 0 ? "X" : "O"
+def valid_move?(board, index)
+  index.between?(0, 8) && !position_taken?(board, index)
 end
 
 def won?(board)
@@ -84,29 +50,40 @@ def over?(board)
   won?(board) || draw?(board)
 end
 
-def winner(board)
-  winner = nil
-  WIN_COMBINATIONS.each do |combo|
-    if combo.all? {|index| board[index] == "X"}
-      winner = "X"
-    elsif combo.all? {|index| board[index] == "O"}
-      winner = "O"
-    else
-    end
-  end
-  winner
+def input_to_index(user_input)
+  user_input.to_i - 1
 end
 
-def play(board)
-  turn_count = 0
-  while turn_count < 9 && !over?(board)
-    turn(board)
-    turn_count += 1
-  end
-  if won?(board)
-    puts "Congratulations #{winner(board)}!"
-  elsif draw?(board)
-    puts "Cat's Game!"
+def turn(board)
+  puts 'Please enter 1-9:'
+  user_input = gets.strip
+  index = input_to_index(user_input)
+  if valid_move?(board, index)
+    move(board, index, current_player(board))
+    display_board(board)
   else
+    turn(board)
+  end
+end
+
+def position_taken?(board, index)
+  board[index] == 'X' || board[index] == 'O'
+end
+
+def current_player(board)
+  turn_count(board).even? ? 'X' : 'O'
+end
+
+def turn_count(board)
+  board.count { |token| token == 'X' || token == 'O' }
+end
+
+def move(board, index, player)
+  board[index] = player
+end
+
+def winner(board)
+  if winning_combo = won?(board)
+    board[winning_combo.first]
   end
 end
